@@ -1,0 +1,6 @@
+{
+  "name": "Sistema de Consulta e Endereçamento de Estoque",
+  "description": "Sistema para leitura de planilha Excel (XLSX), consulta de códigos, atribuição de endereço (MOD, RUA, NUM, APTO) e gravação no Firebase, com relatórios em PDF e Excel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

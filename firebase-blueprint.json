@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "StockRecord": {
+      "title": "Stock Record",
+      "description": "A record of an item's address assignment.",
+      "type": "object",
+      "properties": {
+        "codigo": {
+          "type": "string",
+          "description": "Original barcode or code"
+        },
+        "codigoInterno": {
+          "type": "string",
+          "description": "Internal product code"
+        },
+        "descricao": {
+          "type": "string",
+          "description": "Product description"
+        },
+        "endereco": {
+          "type": "string",
+          "description": "Assigned address formatted as MOD - RUA - NUM - APTO"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who assigned the address"
+        },
+        "createdAt": {
+          "type": "timestamp"
+        }
+      },
+      "required": ["codigo", "codigoInterno", "descricao", "endereco", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "stock_records/{recordId}": {
+      "schema": {
+        "$ref": "#/entities/StockRecord"
+      },
+      "description": "Records containing address assignments for items."
+    }
+  }
+}

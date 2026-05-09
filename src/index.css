@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@media print {
+  body, html, #root {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    background: transparent !important;
+  }
+  
+  @page {
+    margin: 1.5cm;
+  }
+}

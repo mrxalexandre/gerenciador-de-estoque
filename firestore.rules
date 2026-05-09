@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+
+    function isValidStockRecord(data) {
+      return data.keys().hasAll(['codigo', 'codigoInterno', 'descricao', 'endereco', 'userId', 'createdAt'])
+        && data.keys().size() == 6
+        && data.codigo is string && data.codigo.size() > 0 && data.codigo.size() <= 100
+        && data.codigoInterno is string && data.codigoInterno.size() > 0 && data.codigoInterno.size() <= 100
+        && data.descricao is string && data.descricao.size() > 0 && data.descricao.size() <= 500
+        && data.endereco is string && data.endereco.size() > 0 && data.endereco.size() <= 100
+        && data.userId == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    match /stock_records/{recordId} {
+      allow get: if isSignedIn() && isValidId(recordId) && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(recordId) && isValidStockRecord(incoming());
+    }
+  }
+}
