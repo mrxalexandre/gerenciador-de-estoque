@@ -1,12 +1,16 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth, db } from '../lib/firebase';
+import { db } from '../lib/firebase';
 import { doc, getDocFromServer } from 'firebase/firestore';
 
+interface CustomUser {
+  uid: string;
+  email: string;
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: CustomUser | null;
   loading: boolean;
-  signIn: () => Promise<void>;
+  signIn: (u: string, p: string) => Promise<void>;
   signOutUser: () => Promise<void>;
 }
 
@@ -20,7 +24,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export function FirebaseProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<CustomUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,29 +39,26 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
     }
     testConnection();
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    const savedUser = localStorage.getItem('localUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const signIn = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error('Error signing in:', error);
+  const signIn = async (u: string, p: string) => {
+    if (u === 'PCE' && p === 'ahc123456') {
+      const newUser = { uid: 'PCE_USER', email: 'pce@local' };
+      setUser(newUser);
+      localStorage.setItem('localUser', JSON.stringify(newUser));
+    } else {
+      throw new Error('Usuário ou senha inválidos.');
     }
   };
 
   const signOutUser = async () => {
-    try {
-      await auth.signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    setUser(null);
+    localStorage.removeItem('localUser');
   };
 
   return (
@@ -66,3 +67,4 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
+

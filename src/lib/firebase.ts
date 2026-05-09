@@ -34,18 +34,18 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const localUserStr = localStorage.getItem('localUser');
+  const localUser = localUserStr ? JSON.parse(localUserStr) : null;
+
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
+      userId: localUser?.uid || null,
+      email: localUser?.email || null,
+      emailVerified: true,
+      isAnonymous: false,
+      tenantId: null,
+      providerInfo: []
     },
     operationType,
     path
@@ -55,12 +55,15 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 }
 
 export async function logUserAction(action: string, details: string) {
-  if (!auth.currentUser) return;
+  const localUserStr = localStorage.getItem('localUser');
+  if (!localUserStr) return;
+  const localUser = JSON.parse(localUserStr);
+
   const newLogRef = doc(collection(db, 'action_logs'));
   
   try {
     await setDoc(newLogRef, {
-      userId: auth.currentUser.uid,
+      userId: localUser.uid,
       action: action,
       details: details,
       timestamp: serverTimestamp()

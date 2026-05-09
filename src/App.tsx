@@ -13,6 +13,24 @@ import LogsScreen from './components/LogsScreen';
 function MainApp() {
   const { user, loading, signIn, signOutUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'consulta' | 'relatorios' | 'logs'>('consulta');
+  
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsLoggingIn(true);
+    try {
+      await signIn(username, password);
+    } catch (err: any) {
+      setLoginError(err.message);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -33,17 +51,49 @@ function MainApp() {
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">Sistema de Estoque</h1>
             <p className="text-gray-500 mt-2">Faça login para gerenciar o endereçamento de produtos.</p>
           </div>
-          <button
-            onClick={signIn}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors"
-          >
-            <LogIn className="w-5 h-5" />
-            Entrar com Google
-          </button>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <input
+                type="text"
+                placeholder="Login"
+                required
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-left focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                placeholder="Senha"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-left focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            
+            {loginError && (
+              <div className="text-red-500 text-sm font-semibold p-2 bg-red-50 rounded-lg">
+                {loginError}
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white font-medium py-3 px-4 rounded-xl transition-colors"
+            >
+              {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
+              Entrar
+            </button>
+          </form>
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans print:bg-white print:block print:h-auto print:min-h-0">

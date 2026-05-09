@@ -11,7 +11,10 @@ service cloud.firestore {
 
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
-    function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    
+    // Bypass auth to support a simple hardcoded local client login
+    function isSignedIn() { return true; }
+    function getHardcodedUid() { return 'PCE_USER'; }
 
     function isValidStockRecordCreate(data) {
       return data.keys().hasAll(['codigo', 'codigoInterno', 'descricao', 'endereco', 'userId', 'createdAt'])
@@ -20,24 +23,24 @@ service cloud.firestore {
         && data.codigoInterno is string && data.codigoInterno.size() > 0 && data.codigoInterno.size() <= 100
         && data.descricao is string && data.descricao.size() > 0 && data.descricao.size() <= 500
         && data.endereco is string && data.endereco.size() > 0 && data.endereco.size() <= 100
-        && data.userId == request.auth.uid
+        && data.userId == getHardcodedUid()
         && data.createdAt == request.time;
     }
 
     function isValidActionLog(data) {
       return data.keys().hasAll(['userId', 'action', 'details', 'timestamp'])
         && data.keys().size() == 4
-        && data.userId == request.auth.uid
+        && data.userId == getHardcodedUid()
         && data.action is string && data.action.size() > 0 && data.action.size() <= 20
         && data.details is string && data.details.size() > 0 && data.details.size() <= 1000
         && data.timestamp == request.time;
     }
 
     match /stock_records/{recordId} {
-      allow get: if isSignedIn() && isValidId(recordId) && resource.data.userId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(recordId) && resource.data.userId == getHardcodedUid();
+      allow list: if isSignedIn() && resource.data.userId == getHardcodedUid();
       allow create: if isSignedIn() && isValidId(recordId) && isValidStockRecordCreate(incoming());
-      allow update: if isSignedIn() && isValidId(recordId) && existing().userId == request.auth.uid
+      allow update: if isSignedIn() && isValidId(recordId) && existing().userId == getHardcodedUid()
         && incoming().userId == existing().userId
         && incoming().codigo == existing().codigo
         && incoming().codigoInterno == existing().codigoInterno
@@ -46,12 +49,12 @@ service cloud.firestore {
         && incoming().updatedAt == request.time
         && incoming().endereco is string && incoming().endereco.size() > 0 && incoming().endereco.size() <= 100
         && incoming().diff(existing()).affectedKeys().hasOnly(['endereco', 'updatedAt']);
-      allow delete: if isSignedIn() && isValidId(recordId) && existing().userId == request.auth.uid;
+      allow delete: if isSignedIn() && isValidId(recordId) && existing().userId == getHardcodedUid();
     }
 
     match /action_logs/{logId} {
-      allow get: if isSignedIn() && isValidId(logId) && resource.data.userId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(logId) && resource.data.userId == getHardcodedUid();
+      allow list: if isSignedIn() && resource.data.userId == getHardcodedUid();
       allow create: if isSignedIn() && isValidId(logId) && isValidActionLog(incoming());
       // Updates and deletes are implicitly denied by the default catch-all
     }

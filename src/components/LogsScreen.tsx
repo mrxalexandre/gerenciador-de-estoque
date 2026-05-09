@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, Timestamp, where } from 'firebase/firestore';
 import { Loader2, History, RefreshCw } from 'lucide-react';
 import { useAuth } from './FirebaseProvider';
 
@@ -24,6 +24,7 @@ export default function LogsScreen() {
 
     const q = query(
       collection(db, 'action_logs'),
+      where('userId', '==', user.uid),
       orderBy('timestamp', 'desc')
     );
 
