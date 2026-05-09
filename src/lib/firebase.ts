@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json'; // adjust if path is different
 
 const app = initializeApp(firebaseConfig);
@@ -52,4 +52,20 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
+}
+
+export async function logUserAction(action: string, details: string) {
+  if (!auth.currentUser) return;
+  const newLogRef = doc(collection(db, 'action_logs'));
+  
+  try {
+    await setDoc(newLogRef, {
+      userId: auth.currentUser.uid,
+      action: action,
+      details: details,
+      timestamp: serverTimestamp()
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'action_logs');
+  }
 }

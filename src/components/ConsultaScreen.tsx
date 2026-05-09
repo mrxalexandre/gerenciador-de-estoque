@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, Search, Check, AlertCircle, Save, Info, Loader2 } from 'lucide-react';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, handleFirestoreError, OperationType, logUserAction } from '../lib/firebase';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuth } from './FirebaseProvider';
 import { saveFileState, loadFileState, clearFileState } from '../lib/storage';
@@ -200,6 +200,7 @@ export default function ConsultaScreen() {
 
     try {
       await setDoc(newRecordRef, payload);
+      await logUserAction('CREATE', `Criado endereçamento para ${searchResult.codigo} / ${searchResult.codigoInterno} para o endereço ${endereco}`);
       setSaveSuccess(true);
       // Automatically focus search after save if user wants to keep going
       setTimeout(() => {

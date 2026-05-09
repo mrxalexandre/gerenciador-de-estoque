@@ -5,13 +5,14 @@
 
 import { useState } from 'react';
 import { FirebaseProvider, useAuth } from './components/FirebaseProvider';
-import { LogIn, PackageSearch, FileSpreadsheet, LogOut, Loader2 } from 'lucide-react';
+import { LogIn, PackageSearch, FileSpreadsheet, LogOut, Loader2, History } from 'lucide-react';
 import ConsultaScreen from './components/ConsultaScreen';
 import RelatorioScreen from './components/RelatorioScreen';
+import LogsScreen from './components/LogsScreen';
 
 function MainApp() {
   const { user, loading, signIn, signOutUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<'consulta' | 'relatorios'>('consulta');
+  const [activeTab, setActiveTab] = useState<'consulta' | 'relatorios' | 'logs'>('consulta');
 
   if (loading) {
     return (
@@ -72,6 +73,14 @@ function MainApp() {
               <FileSpreadsheet className="w-4 h-4" />
               <span className="hidden sm:inline">Relatórios</span>
             </button>
+            <button
+              onClick={() => setActiveTab('logs')}
+              className={`px-4 py-1.5 text-xs font-medium transition-colors flex items-center gap-2 rounded
+                ${activeTab === 'logs' ? 'bg-slate-700 shadow-sm text-white' : 'text-slate-300 hover:bg-slate-700'}`}
+            >
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">Logs</span>
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -91,7 +100,9 @@ function MainApp() {
       </header>
 
       <main className="flex-1 flex overflow-hidden p-4 sm:p-6 gap-6 max-w-7xl mx-auto w-full flex-col print:overflow-visible print:h-auto print:block print:p-0 print:m-0">
-        {activeTab === 'consulta' ? <ConsultaScreen /> : <RelatorioScreen />}
+        {activeTab === 'consulta' && <ConsultaScreen />}
+        {activeTab === 'relatorios' && <RelatorioScreen />}
+        {activeTab === 'logs' && <LogsScreen />}
       </main>
     </div>
   );

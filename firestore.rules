@@ -13,7 +13,7 @@ service cloud.firestore {
     function existing() { return resource.data; }
     function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
 
-    function isValidStockRecord(data) {
+    function isValidStockRecordCreate(data) {
       return data.keys().hasAll(['codigo', 'codigoInterno', 'descricao', 'endereco', 'userId', 'createdAt'])
         && data.keys().size() == 6
         && data.codigo is string && data.codigo.size() > 0 && data.codigo.size() <= 100
@@ -24,10 +24,36 @@ service cloud.firestore {
         && data.createdAt == request.time;
     }
 
+    function isValidActionLog(data) {
+      return data.keys().hasAll(['userId', 'action', 'details', 'timestamp'])
+        && data.keys().size() == 4
+        && data.userId == request.auth.uid
+        && data.action is string && data.action.size() > 0 && data.action.size() <= 20
+        && data.details is string && data.details.size() > 0 && data.details.size() <= 1000
+        && data.timestamp == request.time;
+    }
+
     match /stock_records/{recordId} {
       allow get: if isSignedIn() && isValidId(recordId) && resource.data.userId == request.auth.uid;
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && isValidId(recordId) && isValidStockRecord(incoming());
+      allow create: if isSignedIn() && isValidId(recordId) && isValidStockRecordCreate(incoming());
+      allow update: if isSignedIn() && isValidId(recordId) && existing().userId == request.auth.uid
+        && incoming().userId == existing().userId
+        && incoming().codigo == existing().codigo
+        && incoming().codigoInterno == existing().codigoInterno
+        && incoming().descricao == existing().descricao
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().endereco is string && incoming().endereco.size() > 0 && incoming().endereco.size() <= 100
+        && incoming().diff(existing()).affectedKeys().hasOnly(['endereco', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(recordId) && existing().userId == request.auth.uid;
+    }
+
+    match /action_logs/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(logId) && isValidActionLog(incoming());
+      // Updates and deletes are implicitly denied by the default catch-all
     }
   }
 }

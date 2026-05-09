@@ -27,9 +27,24 @@
         },
         "createdAt": {
           "type": "timestamp"
+        },
+        "updatedAt": {
+          "type": "timestamp"
         }
       },
       "required": ["codigo", "codigoInterno", "descricao", "endereco", "userId", "createdAt"]
+    },
+    "ActionLog": {
+      "title": "Action Log",
+      "description": "Immutable log of user actions",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "timestamp" }
+      },
+      "required": ["userId", "action", "details", "timestamp"]
     }
   },
   "firestore": {
@@ -38,6 +53,12 @@
         "$ref": "#/entities/StockRecord"
       },
       "description": "Records containing address assignments for items."
+    },
+    "action_logs/{logId}": {
+      "schema": {
+        "$ref": "#/entities/ActionLog"
+      },
+      "description": "Immutable user action logs."
     }
   }
 }
