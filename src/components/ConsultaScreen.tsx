@@ -59,6 +59,7 @@ export default function ConsultaScreen() {
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadFileState().then(state => {
@@ -207,6 +208,9 @@ export default function ConsultaScreen() {
         setSearchCode('');
         setSearchResult(null);
         setSaveSuccess(false);
+        setTimeout(() => {
+          searchInputRef.current?.focus();
+        }, 0);
       }, 3000);
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'stock_records');
@@ -317,6 +321,7 @@ export default function ConsultaScreen() {
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Busque pelo código do produto..."
                 value={searchCode}
